@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipe.project.Exceptions.NoSuchRecipeException;
 import recipe.project.Model.Recipe;
+import recipe.project.Repository.RecipeRepo;
 import recipe.project.Service.RecipeService;
 
 import java.util.List;
@@ -74,6 +75,36 @@ public class RecipeController {
             Recipe returneUpdatedRecipe = recipeService.updateRecipe(updateRecipe, true);
             return ResponseEntity.ok(returneUpdatedRecipe);
         } catch (NoSuchRecipeException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/average-rating")
+    public ResponseEntity<?> getAverageRating(@PathVariable("id") Long id){
+        try {
+            double averageRating = recipeService.getAverageRatingForRecipe(id);
+            return ResponseEntity.ok("The average rating of recipe with Id "+ id + " is: " + averageRating);
+        } catch (NoSuchRecipeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("min-rating/{minimumRating}")
+    public ResponseEntity<?> getRecipesByMinimumAverageRating(@PathVariable("minimumRating") Double minimumRating){
+        try {
+            List<Recipe> filterRecipes = recipeService.getRecipesMinimumAverageRating(minimumRating);
+            return ResponseEntity.ok(filterRecipes);
+        } catch (NoSuchRecipeException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No recipes found with average rating >= " + minimumRating);
+        }
+    }
+
+    @GetMapping("/search/{userName}")
+    public ResponseEntity<?> getRecipesByUserName(@PathVariable("userName") String userName){
+        try {
+            List<Recipe> userRecipe = recipeService.getRecipeByName(userName);
+            return ResponseEntity.ok(userRecipe);
+        } catch (NoSuchRecipeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

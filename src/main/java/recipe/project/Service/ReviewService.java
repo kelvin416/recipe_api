@@ -12,6 +12,7 @@ import recipe.project.Repository.ReviewRepo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class ReviewService {
@@ -21,6 +22,13 @@ public class ReviewService {
 
     @Autowired
     RecipeService recipeService;
+
+    String[] quirkyMessages = {
+            "Nice try! 🕵️ You can't review your own recipe. Let someone else tell you how awesome it is!",
+            "Whoa there, Chef! 🍳 Self-love is great, but let others judge your masterpiece.",
+            "Nope! 🧁 Reviewing your own recipe is like laughing at your own jokes — we all do it, but not here.",
+            "Mirror mirror on the wall... is this a self-review after all? 😉"
+    };
 
     public Review getReviewById(Long id) throws NoSuchReviewException{
         Optional<Review> review = reviewRepo.findById(id);
@@ -55,6 +63,10 @@ public class ReviewService {
 
     public Recipe postNewReview(Review review, Long id){
         Recipe recipe = recipeService.getRecipeById(id);
+        if (review.getUserName().equalsIgnoreCase(recipe.getUserName())){
+            throw new IllegalStateException("Nice try haha!! You can't review your own recipe." +
+                    "Let someone else review and rate it to tell you how they feel.");
+        }
         recipe.getReviews().add(review);
         recipeService.updateRecipe(recipe, false);
         return recipe;
@@ -64,7 +76,8 @@ public class ReviewService {
     public Review deleteReviewById(Long id) throws NoSuchReviewException {
         Review review = getReviewById(id);
         if (null == review) {
-            throw new NoSuchReviewException("The review you are trying to delete does not exist");
+            int random = new Random().nextInt(quirkyMessages.length);
+            throw new NoSuchReviewException(quirkyMessages[random]);
         }
 
         reviewRepo.deleteById(id);

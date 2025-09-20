@@ -24,5 +24,7 @@ public class Ingredient {
 
     @NotNull
     private String amount;
+
+    @NotNull
     private String state;
 }

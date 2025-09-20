@@ -58,6 +58,35 @@ public class RecipeService {
         return recipes;
     }
 
+    public double getAverageRatingForRecipe(Long recipeId) throws NoSuchRecipeException{
+        Recipe recipe = getRecipeById(recipeId);
+        return recipe.getAverageRating();
+    }
+
+    public List<Recipe> getRecipesMinimumAverageRating(double minimumRating) throws NoSuchRecipeException{
+        List<Recipe> allRecipes = recipeRepo.findAll();
+
+        return allRecipes.stream().filter(recipe -> recipe.getAverageRating() >= minimumRating).toList();
+    }
+
+    public List<Recipe> searchRecipeByNameAndDifficulty(String name, int maximumDifficulty) throws NoSuchRecipeException{
+        List<Recipe> recipes = recipeRepo.findAll();
+        return recipes.stream()
+                .filter(recipe -> recipe.getName().toLowerCase().contains(name.toLowerCase()))
+                .filter(recipe -> recipe.getDifficultyRating() < maximumDifficulty)
+                .toList();
+    }
+
+    public List<Recipe> getRecipesByUserName(String userName){
+        List<Recipe> recipes = recipeRepo.findByNameContainingIgnoreCase(userName);
+
+        if (recipes.isEmpty()){
+            throw new NoSuchRecipeException("No recipes found for user: " + userName);
+        }
+
+        return recipes;
+    }
+
     @Transactional
     public Recipe deleteRecipeById(Long id) throws NoSuchRecipeException{
         try {
@@ -86,4 +115,5 @@ public class RecipeService {
                     "POST a recipe not PATCH one.");
         }
     }
+
 }
